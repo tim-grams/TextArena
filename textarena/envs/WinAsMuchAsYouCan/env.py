@@ -3,7 +3,7 @@ import random
 from typing import Any, Dict, List, Optional, Tuple
 
 import textarena as ta
-from textarena.envs.WinAsMuchAsYouCan.renderer import create_board_str
+from textarena.envs.WinAsMuchAsYouCan.renderer import get_board_str
 
 
 class WinAsMuchAsYouCanEnv(ta.Env):
@@ -614,20 +614,17 @@ ACT PHASE STATUS:
                 reason=f"Tie between players {winners} with {max_score} points each!"
             )
         
-        # Set rewards based on final scores
+        # Set rewards based on final scores; 1 win, -1 lose, 0 draw to follow TextArena convention
         if max_score > 0:
             rewards = {}
             for pid, score in final_scores.items():
-                # Normalize to 0-100 range, ensuring winners get 100
                 if pid in winners:
-                    rewards[pid] = 100
+                    rewards[pid] = 1
                 else:
-                    # Scale other scores relative to winner
-                    normalized = int((score / max_score) * 100) if score > 0 else 0
-                    rewards[pid] = max(0, normalized)
+                    rewards[pid] = -1
         else:
             # All scores are 0 or negative
-            rewards = {pid: 50 for pid in range(4)}  # Equal rewards for tie at 0
+            rewards = {pid: 0 for pid in range(4)}  # Equal rewards for tie at 0
         
         self.state.rewards = rewards
         self.state.done = True
@@ -638,7 +635,7 @@ ACT PHASE STATUS:
         observation = self.state.get_current_player_observation()
         
         # Add current game board state
-        board_str = create_board_str(self.state.game_state, player_id)
+        board_str = get_board_str(self.state.game_state, player_id)
         observation.append((ta.GAME_ID, board_str, ta.ObservationType.GAME_BOARD))
         
         return player_id, observation
