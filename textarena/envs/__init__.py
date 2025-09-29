@@ -571,6 +571,7 @@ register_with_versions(id="ScorableGames-v0-game2", entry_point="textarena.envs.
 register_with_versions(id="ScorableGames-v0-game3", entry_point="textarena.envs.ScorableGames.env:ScorableGamesEnv", wrappers={"default": DEFAULT_WRAPPERS, "-train": DEFAULT_WRAPPERS}, game_config="game3", max_rounds=120, invalid_move_default="[Accept]")
 register_with_versions(id="ScorableGames-v0-7players", entry_point="textarena.envs.ScorableGames.env:ScorableGamesEnv", wrappers={"default": DEFAULT_WRAPPERS, "-train": DEFAULT_WRAPPERS}, game_config="base_7players", max_rounds=140, invalid_move_default="[Accept]")
 register_with_versions(id="ScorableGames-v0-medicalethics", entry_point="textarena.envs.ScorableGames.env:ScorableGamesEnv", wrappers={"default": DEFAULT_WRAPPERS, "-train": DEFAULT_WRAPPERS}, game_config="medical_ethics", max_rounds=80, invalid_move_default="[Accept]")
+register_with_versions(id="ScorableGames-v0-vendorretailer", entry_point="textarena.envs.ScorableGames.env:ScorableGamesEnv", wrappers={"default": DEFAULT_WRAPPERS, "-train": DEFAULT_WRAPPERS}, game_config="vendor_retailer", max_rounds=40, invalid_move_default="[Accept]")
 
 # UltimateTexasHoldem [1 Player]
 register_with_versions(id="UltimateTexasHoldem-v0", entry_point="textarena.envs.UltimateTexasHoldem.env:UltimateTexasHoldemEnv", wrappers={"default": DEFAULT_WRAPPERS, "-train": [GameMessagesObservationWrapper, ActionFormattingWrapper]}, max_turns = 1000, start_chips = 1000, ante_amount = 25)
