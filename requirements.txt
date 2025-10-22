@@ -5,3 +5,5 @@ chess
 python-dotenv
 requests
 websockets
+pandas
+numpy
