@@ -10,7 +10,7 @@
   - `[Reject]` - Reject current proposal
   - Free text conversation (no brackets)
 - **Example:**
-  - `"I think moderate discounts work well [Propose] 10%, 5%, 10%, 10%, 5%"`
+  - `"I think moderate discounts work well [Propose] 20%, 15%, 20%, 20%, 15%"`
   - `"This looks reasonable to me [Accept]"`
   - `"Hello, let's discuss the discount rates"`
 
@@ -23,7 +23,7 @@
 ### Initial Observation
 ```plaintext
 ROLE: Brand Specialist at E-commerce Platform
-OBJECTIVE: Achieve total sales ≥ $130,200 (75% of maximum possible)
+OBJECTIVE: Achieve total sales ≥ $130,200 (715% of maximum possible)
 
 NEGOTIATION STYLE: Balanced
 [Role-specific instructions]
@@ -31,9 +31,9 @@ NEGOTIATION STYLE: Balanced
 PRODUCTS & SALES DATA:
 Gaming_Mouse ($60/unit):
   0%: 200 units (±20) → $12,000 sales (±$1,200)
-  5%: 280 units (±28) → $15,960 sales (±$1,596)
-  10%: 400 units (±40) → $21,600 sales (±$2,160)
-  20%: 600 units (±60) → $28,800 sales (±$2,880)
+  15%: 280 units (±28) → $15,960 sales (±$1,596)
+  20%: 400 units (±40) → $21,600 sales (±$2,160)
+  30%: 600 units (±60) → $28,800 sales (±$2,880)
 
 PRODUCT ORDER: Gaming_Mouse, Premium_Laptop, USB_Hub, Power_Bank, Phone_Charger
 
@@ -48,7 +48,7 @@ ACTIONS:
 ROUND 3/20
 
 CURRENT PROPOSAL:
-Gaming_Mouse:10%, Premium_Laptop:10%, USB_Hub:10%, Power_Bank:10%, Phone_Charger:10%
+Gaming_Mouse:20%, Premium_Laptop:20%, USB_Hub:30%, Power_Bank:20%, Phone_Charger:30%
 Proposed by: Player 0
 
 PROPOSAL ANALYSIS (estimated using means ± variance):
@@ -60,7 +60,7 @@ Player 0: I think moderate discounts work well
 Player 1: This looks reasonable to me
 
 RECENT HISTORY:
-R2: Player 0 proposed Gaming_Mouse:10%, Premium_Laptop:10%, ...
+R2: Player 0 proposed Gaming_Mouse:20%, Premium_Laptop:20%, ...
 ```
 
 ## Gameplay
@@ -97,9 +97,8 @@ R2: Player 0 proposed Gaming_Mouse:10%, Premium_Laptop:10%, ...
 | Env-id                          | num_products | max_rounds | num_simulations |
 |---------------------------------|:------------:|:----------:|:---------------:|
 | `VendorNegotiation-v0`          | `5`          | `20`       | `1000`          |
-| `VendorNegotiation-v0-quick`    | `3`          | `10`       | `1000`          |
-| `VendorNegotiation-v0-complex`  | `8`          | `30`       | `1000`          |
-| `VendorNegotiation-v0-fast`     | `5`          | `20`       | `100`           |
+| `VendorNegotiation-v0-lite`    | `3`          | `10`       | `1000`          |
+| `VendorNegotiation-v0-heavy`  | `8`          | `30`       | `1000`          |
 
 ## Role Customization
 
