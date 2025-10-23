@@ -40,10 +40,10 @@ class VendorNegotiationEnv(ta.Env):
                  error_allowance: int = 3,
                  brand_target_percentage: float = 0.75,
                  vendor_baseline_multiplier: float = 1.0,
-                 allowed_discounts: List[int] = None,
                  num_simulations: int = 1000,
                  brand_role: Optional[str] = None,
                  vendor_role: Optional[str] = None,
+                 product_list_path: Optional[str] = None,
                  seed: Optional[int] = None):
         """
         Initialize the Vendor Negotiation environment.
@@ -52,12 +52,12 @@ class VendorNegotiationEnv(ta.Env):
             num_products: Number of products to negotiate (default: 5)
             max_rounds: Maximum negotiation rounds (default: 20)
             error_allowance: Invalid moves allowed before penalty (default: 3)
-            brand_target_percentage: Brand's target as % of max sales (default: 0.85)
+            brand_target_percentage: Brand's target as % of max sales (default: 0.75)
             vendor_baseline_multiplier: Vendor must beat this × baseline (default: 1.0)
-            allowed_discounts: List of allowed discount rates (default: [0, 5, 10, 20])
             num_simulations: Monte Carlo simulation runs (default: 1000)
             brand_role: Role file name for Player 0 (default: "default")
             vendor_role: Role file name for Player 1 (default: "default")
+            product_list_path: Path to product CSV file (default: "data/product_list.csv")
             seed: Random seed for reproducibility
         """
         super().__init__()
@@ -67,14 +67,17 @@ class VendorNegotiationEnv(ta.Env):
         self.error_allowance = error_allowance
         self.brand_target_percentage = brand_target_percentage
         self.vendor_baseline_multiplier = vendor_baseline_multiplier
-        self.allowed_discounts = allowed_discounts or [0, 5, 10, 20]
         self.num_simulations = num_simulations
         self.brand_role_name = brand_role or "default"
         self.vendor_role_name = vendor_role or "default"
+        self.product_list_path = product_list_path or "data/product_list.csv"
         self.seed = seed
         
         # Load product data and roles
         self.all_products = self._load_product_data()
+        
+        # Always infer allowed discounts from product data
+        self.allowed_discounts = self._infer_allowed_discounts()
         self.brand_role_instructions = self._load_role_instructions("brand", self.brand_role_name)
         self.vendor_role_instructions = self._load_role_instructions("vendor", self.vendor_role_name)
         
@@ -88,7 +91,10 @@ class VendorNegotiationEnv(ta.Env):
     
     def _load_product_data(self) -> Dict:
         """Load product data from CSV in long format."""
-        csv_path = os.path.join(os.path.dirname(__file__), "data", "product_list.csv")
+        if os.path.isabs(self.product_list_path):
+            csv_path = self.product_list_path
+        else:
+            csv_path = os.path.join(os.path.dirname(__file__), self.product_list_path)
         df = pd.read_csv(csv_path)
         
         # Group by product
@@ -102,6 +108,23 @@ class VendorNegotiationEnv(ta.Env):
             }
         
         return products
+    
+    def _infer_allowed_discounts(self) -> List[int]:
+        """Infer allowed discount rates from product data."""
+        if not self.all_products:
+            return [0, 15, 20, 30]  # Fallback default
+        
+        # Get all unique discount rates from any product
+        all_discount_rates = set()
+        for product_name, product_data in self.all_products.items():
+            all_discount_rates.update(product_data['data'].keys())
+        
+        # Return sorted list
+        return sorted(list(all_discount_rates))
+    
+    def _get_max_discount_rate(self) -> int:
+        """Get the maximum discount rate from allowed discounts."""
+        return max(self.allowed_discounts) if self.allowed_discounts else 30
     
     def _load_role_instructions(self, player_type: str, role_name: str) -> str:
         """Load role instructions from text file."""
@@ -146,9 +169,10 @@ class VendorNegotiationEnv(ta.Env):
         self.selected_products = random.sample(all_product_names, min(self.num_products, len(all_product_names)))
         self.products = {name: self.all_products[name] for name in self.selected_products}
         
-        # Calculate targets
+        # Calculate targets using maximum discount rate
+        max_discount = self._get_max_discount_rate()
         self.brand_target = self.brand_target_percentage * sum(
-            self.products[p]['data'][20]['mean_sales'] for p in self.selected_products
+            self.products[p]['data'][max_discount]['mean_sales'] for p in self.selected_products
         )
         self.vendor_baseline = self.vendor_baseline_multiplier * sum(
             self.products[p]['data'][0]['mean_profit'] for p in self.selected_products
