@@ -239,9 +239,6 @@ NEGOTIATION: Agree on discount rates for {self.num_products} products with Brand
 
 {render_product_data_for_vendor(self.products, self.selected_products, self.allowed_discounts)}
 
-BASELINE PROFIT (baseline at {self.vendor_baseline_multiplier} times profit at 0% discount): ${self.vendor_baseline:.0f}
-TARGET: Beat baseline
-
 PRODUCT ORDER: {product_order}
 
 ACTIONS:
