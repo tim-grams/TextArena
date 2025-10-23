@@ -87,9 +87,10 @@ R2: Player 0 proposed Gaming_Mouse:20%, Premium_Laptop:20%, ...
 ## Parameters
 - `num_products` (`int`): Number of products to negotiate (default: 5)
 - `max_rounds` (`int`): Maximum negotiation rounds (default: 20)
-- `brand_target_percentage` (`float`): Brand's target as % of max sales (default: 0.75)
+- `brand_target_percentage` (`float`): Brand Specialist's target as % of max sales (default: 0.8)
+- `vendor_baseline_multiplier` (`float`): Vendor's target as times of their profit at 0% discount (default: 1.2)
 - `num_simulations` (`int`): Monte Carlo simulation runs (default: 1000)
-- `brand_role` (`str`): Brand negotiation style (default: "default")
+- `brand_role` (`str`): Brand Specialist negotiation style (default: "default")
 - `vendor_role` (`str`): Vendor negotiation style (default: "default")
 
 ## Variants
