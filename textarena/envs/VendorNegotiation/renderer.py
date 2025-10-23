@@ -15,7 +15,7 @@ def render_product_data_for_brand(products: Dict,
     Render product data for Brand Specialist (Player 0).
     Shows only sales data, not costs or profits.
     """
-    lines = ["PRODUCTS & SALES FORECASTS (MEAN±STD):"]
+    lines = ["PRODUCTS & SALES FORECASTS (MEAN and 95% CI):"]
     
     for product_name in selected_products:
         p = products[product_name]
@@ -23,9 +23,15 @@ def render_product_data_for_brand(products: Dict,
         
         for discount in allowed_discounts:
             data = p['data'][discount]
+            # Calculate 95% CI for units and sales
+            units_lower = max(0, data['mean_units'] - 1.96 * data['std_units'])
+            units_upper = data['mean_units'] + 1.96 * data['std_units']
+            sales_lower = max(0, data['mean_sales'] - 1.96 * data['std_sales'])
+            sales_upper = data['mean_sales'] + 1.96 * data['std_sales']
+            
             lines.append(
-                f"  {discount}%: {data['mean_units']:.0f} units (±{data['std_units']:.0f}) "
-                f"→ ${data['mean_sales']:.0f} sales (±${data['std_sales']:.0f})"
+                f"  {discount}%: {data['mean_units']:.0f} units (95% CI: {units_lower:.0f}-{units_upper:.0f}) "
+                f"→ ${data['mean_sales']:.0f} sales (95% CI: ${sales_lower:.0f}-${sales_upper:.0f})"
             )
     
     return "\n".join(lines)
@@ -38,7 +44,7 @@ def render_product_data_for_vendor(products: Dict,
     Render product data for Vendor (Player 1).
     Shows sales data AND profit data.
     """
-    lines = ["PRODUCTS & PROFIT DATA:"]
+    lines = ["PRODUCTS & PROFIT DATA (MEAN and 95% CI):"]
     
     for product_name in selected_products:
         p = products[product_name]
@@ -46,9 +52,15 @@ def render_product_data_for_vendor(products: Dict,
         
         for discount in allowed_discounts:
             data = p['data'][discount]
+            # Calculate 95% CI for units and profit
+            units_lower = max(0, data['mean_units'] - 1.96 * data['std_units'])
+            units_upper = data['mean_units'] + 1.96 * data['std_units']
+            profit_lower = data['mean_profit'] - 1.96 * data['std_profit']
+            profit_upper = data['mean_profit'] + 1.96 * data['std_profit']
+            
             lines.append(
-                f"  {discount}%: {data['mean_units']:.0f} units "
-                f"→ ${data['mean_profit']:.0f} profit (±${data['std_profit']:.0f})"
+                f"  {discount}%: {data['mean_units']:.0f} units (95% CI: {units_lower:.0f}-{units_upper:.0f}) "
+                f"→ ${data['mean_profit']:.0f} profit (95% CI: ${profit_lower:.0f}-${profit_upper:.0f})"
             )
     
     return "\n".join(lines)
@@ -80,25 +92,39 @@ def render_current_state(current_proposal: Optional[Dict],
         # Show proposal analysis if we have the data
         if products and brand_target is not None and vendor_baseline is not None:
             lines.append("")
-            lines.append("PROPOSAL ANALYSIS ESTIMATED WITH SALES FORECASTS:")
+            lines.append("PROPOSAL ANALYSIS WITH 95% CONFIDENCE INTERVALS:")
             
-            total_sales = 0
-            total_profit = 0
+            total_sales_mean = 0
+            total_sales_std = 0
+            total_profit_mean = 0
+            total_profit_std = 0
             
             for product, discount in current_proposal['discounts'].items():
                 if product in products:
                     data = products[product]['data'][discount]
-                    total_sales += data['mean_sales']
-                    total_profit += data['mean_profit']
+                    total_sales_mean += data['mean_sales']
+                    total_sales_std += data['std_sales'] ** 2  # Sum variances
+                    total_profit_mean += data['mean_profit']
+                    total_profit_std += data['std_profit'] ** 2  # Sum variances
+            
+            # Convert back to standard deviations
+            total_sales_std = total_sales_std ** 0.5
+            total_profit_std = total_profit_std ** 0.5
+            
+            # Calculate 95% confidence intervals (mean ± 1.96 * std)
+            sales_lower = max(0, total_sales_mean - 1.96 * total_sales_std)
+            sales_upper = total_sales_mean + 1.96 * total_sales_std
+            profit_lower = total_profit_mean - 1.96 * total_profit_std
+            profit_upper = total_profit_mean + 1.96 * total_profit_std
             
             # Show analysis for current player
             if current_player_id == 0:  # Brand Specialist
-                status = "MEETS TARGET" if total_sales >= brand_target else "BELOW TARGET"
-                lines.append(f"Expected Sales: ${total_sales:.0f} - {status}")
+                status = "LIKELY MEETS TARGET" if sales_lower >= brand_target else "RISKY - MAY MISS TARGET"
+                lines.append(f"Expected Sales: ${total_sales_mean:.0f} (95% CI: ${sales_lower:.0f}-${sales_upper:.0f}) - {status}")
                 lines.append(f"Your Target: ${brand_target:.0f}")
             elif current_player_id == 1:  # Vendor
-                status = "BEATS BASELINE" if total_profit > vendor_baseline else "BELOW BASELINE"
-                lines.append(f"Expected Profit: ${total_profit:.0f} - {status}")
+                status = "LIKELY BEATS BASELINE" if profit_lower > vendor_baseline else "RISKY - MAY MISS BASELINE"
+                lines.append(f"Expected Profit: ${total_profit_mean:.0f} (95% CI: ${profit_lower:.0f}-${profit_upper:.0f}) - {status}")
                 lines.append(f"Your Baseline: ${vendor_baseline:.0f}")
         
         lines.append("")

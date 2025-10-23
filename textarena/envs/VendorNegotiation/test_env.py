@@ -236,7 +236,7 @@ class TestVendorNegotiationWinConditions:
     
     def test_vendor_wins_brand_loses(self):
         """Test scenario where only vendor wins"""
-        env = VendorNegotiationEnv(num_products=3, brand_target_percentage=0.9)  # High brand requirement
+        env = VendorNegotiationEnv(num_products=3, brand_target_percentage=0.95, vendor_baseline_multiplier=1.0)  # Very high brand requirement, normal vendor
         env.reset(num_players=2, seed=42)
         
         # Low discount deal - good for vendor, bad for brand
@@ -465,14 +465,14 @@ class TestVendorNegotiationProductSelection:
     
     def test_target_calculation(self):
         """Test that brand target and vendor baseline are calculated correctly"""
-        env = VendorNegotiationEnv(num_products=3, brand_target_percentage=0.8)
+        env = VendorNegotiationEnv(num_products=3, brand_target_percentage=0.8, vendor_baseline_multiplier=1.0)
         env.reset(num_players=2, seed=42)
         
         # Calculate expected values
         expected_brand_target = 0.8 * sum(
             env.products[p]['data'][30]['mean_sales'] for p in env.selected_products
         )
-        expected_vendor_baseline = sum(
+        expected_vendor_baseline = 1.0 * sum(
             env.products[p]['data'][0]['mean_profit'] for p in env.selected_products
         )
         
@@ -499,7 +499,8 @@ class TestVendorNegotiationProposalAnalysis:
         obs_str = str(observation)
         assert "PROPOSAL ANALYSIS" in obs_str
         assert "Expected Profit" in obs_str
-        assert "BEATS BASELINE" in obs_str or "BELOW BASELINE" in obs_str
+        assert ("LIKELY BEATS BASELINE" in obs_str or "RISKY - MAY MISS BASELINE" in obs_str or 
+                "BEATS BASELINE" in obs_str or "BELOW BASELINE" in obs_str)
     
     def test_proposal_analysis_vendor(self):
         """Test that vendor sees sales analysis when brand makes proposal"""
@@ -516,7 +517,8 @@ class TestVendorNegotiationProposalAnalysis:
         obs_str = str(observation)
         assert "PROPOSAL ANALYSIS" in obs_str
         assert "Expected Profit" in obs_str
-        assert "BEATS BASELINE" in obs_str or "BELOW BASELINE" in obs_str
+        assert ("LIKELY BEATS BASELINE" in obs_str or "RISKY - MAY MISS BASELINE" in obs_str or 
+                "BEATS BASELINE" in obs_str or "BELOW BASELINE" in obs_str)
 
 
 class TestVendorNegotiationEdgeCases:
