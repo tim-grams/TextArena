@@ -367,9 +367,8 @@ register_with_versions(id="TwoDollar-v0", entry_point="textarena.envs.TwoDollar.
 
 # VendorNegotiation [2 Player]
 register_with_versions(id="VendorNegotiation-v0", entry_point="textarena.envs.VendorNegotiation.env:VendorNegotiationEnv", wrappers={"default": DEFAULT_WRAPPERS, "-train": CONVERSATIONAL_WRAPPERS}, num_products=5, max_rounds=20, num_simulations=1000, brand_target_percentage=0.75)
-register_with_versions(id="VendorNegotiation-v0-quick", entry_point="textarena.envs.VendorNegotiation.env:VendorNegotiationEnv", wrappers={"default": DEFAULT_WRAPPERS, "-train": CONVERSATIONAL_WRAPPERS}, num_products=3, max_rounds=10, num_simulations=1000, brand_target_percentage=0.75)
-register_with_versions(id="VendorNegotiation-v0-complex", entry_point="textarena.envs.VendorNegotiation.env:VendorNegotiationEnv", wrappers={"default": DEFAULT_WRAPPERS, "-train": CONVERSATIONAL_WRAPPERS}, num_products=8, max_rounds=30, num_simulations=1000, brand_target_percentage=0.75)
-register_with_versions(id="VendorNegotiation-v0-fast", entry_point="textarena.envs.VendorNegotiation.env:VendorNegotiationEnv", wrappers={"default": DEFAULT_WRAPPERS, "-train": CONVERSATIONAL_WRAPPERS}, num_products=5, max_rounds=20, num_simulations=100, brand_target_percentage=0.75)
+register_with_versions(id="VendorNegotiation-v0-lite", entry_point="textarena.envs.VendorNegotiation.env:VendorNegotiationEnv", wrappers={"default": DEFAULT_WRAPPERS, "-train": CONVERSATIONAL_WRAPPERS}, num_products=3, max_rounds=10, num_simulations=1000, brand_target_percentage=0.75)
+register_with_versions(id="VendorNegotiation-v0-heavy", entry_point="textarena.envs.VendorNegotiation.env:VendorNegotiationEnv", wrappers={"default": DEFAULT_WRAPPERS, "-train": CONVERSATIONAL_WRAPPERS}, num_products=8, max_rounds=30, num_simulations=1000, brand_target_percentage=0.75)
 
 # UltimateTicTacToe [2 Player]
 register_with_versions(id="UltimateTicTacToe-v0", entry_point="textarena.envs.UltimateTicTacToe.env:UltimateTicTacToeEnv", wrappers={"default": DEFAULT_WRAPPERS, "-train": BOARDGAME_WRAPPERS})
