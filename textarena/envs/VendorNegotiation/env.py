@@ -6,7 +6,7 @@ with a Vendor (Player 1) over discount rates for products in an upcoming sales e
 
 Both players can win by achieving their respective objectives:
 - Brand Specialist: Achieve target sales (% of maximum possible)
-- Vendor: Achieve profit above baseline (0% discount scenario)
+- Vendor: Achieve profit above baseline (X times 0% discount scenario)
 """
 
 import os
@@ -52,8 +52,8 @@ class VendorNegotiationEnv(ta.Env):
             num_products: Number of products to negotiate (default: 5)
             max_rounds: Maximum negotiation rounds (default: 20)
             error_allowance: Invalid moves allowed before penalty (default: 3)
-            brand_target_percentage: Brand's target as % of max sales (default: 0.75)
-            vendor_baseline_multiplier: Vendor must beat this × baseline (default: 1.0)
+            brand_target_percentage: Brand's target as % of max sales (default: 0.95)
+            vendor_baseline_multiplier: Vendor must beat this × baseline (default: 1.5)
             num_simulations: Monte Carlo simulation runs (default: 1000)
             brand_role: Role file name for Player 0 (default: "default")
             vendor_role: Role file name for Player 1 (default: "default")
@@ -230,7 +230,7 @@ ROUNDS: {self.max_rounds} maximum
 """
         else:  # Vendor
             prompt = f"""ROLE: Vendor
-OBJECTIVE: Achieve total profit > ${self.vendor_baseline:.0f} (baseline at ${self.vendor_baseline_multiplier} times profit at 0% discount)
+OBJECTIVE: Achieve total profit > ${self.vendor_baseline:.0f} (baseline at {self.vendor_baseline_multiplier} times profit at 0% discount)
 
 You must NEVER reveal information about your profit and cost.
 {self.vendor_role_instructions}
@@ -239,7 +239,7 @@ NEGOTIATION: Agree on discount rates for {self.num_products} products with Brand
 
 {render_product_data_for_vendor(self.products, self.selected_products, self.allowed_discounts)}
 
-BASELINE PROFIT (0% discount): ${self.vendor_baseline:.0f}
+BASELINE PROFIT (baseline at {self.vendor_baseline_multiplier} times profit at 0% discount): ${self.vendor_baseline:.0f}
 TARGET: Beat baseline
 
 PRODUCT ORDER: {product_order}
