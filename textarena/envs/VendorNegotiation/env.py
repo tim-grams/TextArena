@@ -230,8 +230,9 @@ ROUNDS: {self.max_rounds} maximum
 """
         else:  # Vendor
             prompt = f"""ROLE: Vendor
-OBJECTIVE: Achieve total profit > ${self.vendor_baseline:.0f} (baseline at 0% discount)
+OBJECTIVE: Achieve total profit > ${self.vendor_baseline:.0f} (baseline at ${self.vendor_baseline_multiplier} times profit at 0% discount)
 
+You must NEVER reveal information about your profit and cost.
 {self.vendor_role_instructions}
 
 NEGOTIATION: Agree on discount rates for {self.num_products} products with Brand Specialist
