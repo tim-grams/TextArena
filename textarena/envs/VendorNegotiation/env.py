@@ -38,8 +38,8 @@ class VendorNegotiationEnv(ta.Env):
                  num_products: int = 5,
                  max_rounds: int = 20,
                  error_allowance: int = 3,
-                 brand_target_percentage: float = 0.95,
-                 vendor_baseline_multiplier: float = 1.5,
+                 brand_target_percentage: float = 0.8,
+                 vendor_baseline_multiplier: float = 1.2,
                  num_simulations: int = 1000,
                  brand_role: Optional[str] = None,
                  vendor_role: Optional[str] = None,
@@ -221,10 +221,12 @@ NEGOTIATION: Agree on discount rates for {self.num_products} products with Vendo
 
 PRODUCT ORDER: {product_order}
 
-ACTIONS:
-[Propose] X%, Y%, Z%, ... (follow product order above)
-[Accept]
-[Reject]
+ACTIONS: There are two parts of an action, STRICTLY in this order.
+1. Free-text communication to the other party to persuade them to agree to a deal favorable to you.
+2. ALWAYS end with one of these bracketed actions:
+- [Propose] X%, Y%, Z%, ... (follow product order above)
+- [Accept]
+- [Reject]
 
 ROUNDS: {self.max_rounds} maximum
 """
@@ -241,10 +243,12 @@ NEGOTIATION: Agree on discount rates for {self.num_products} products with Brand
 
 PRODUCT ORDER: {product_order}
 
-ACTIONS:
-[Propose] X%, Y%, Z%, ... (follow product order above)
-[Accept]
-[Reject]
+ACTIONS: There are two parts of an action, STRICTLY in this order.
+1. Free-text communication to the other party to persuade them to agree to a deal favorable to you.
+2. ALWAYS end with one of these bracketed actions:
+- [Propose] X%, Y%, Z%, ... (follow product order above)
+- [Accept]
+- [Reject]
 
 ROUNDS: {self.max_rounds} maximum
 """
