@@ -72,7 +72,7 @@ R2: Player 0 proposed Gaming_Mouse:10%, Premium_Laptop:10%, ...
 
 ## Key Rules
 1. **Proposal Format**: Must specify discount for all products in order
-2. **Allowed Discounts**: 0%, 5%, 10%, 20%
+2. **Allowed Discounts**: 0%, 15%, 20%, 30%
 3. **Conversation**: Free text allowed, captured before bracketed actions
 4. **Error Allowance**: 3 invalid moves before penalty
 
