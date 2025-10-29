@@ -12,9 +12,10 @@ Both players can win by achieving their respective objectives:
 import os
 import re
 import random
-import pandas as pd
+import csv
 import numpy as np
 from typing import Any, Dict, List, Optional, Tuple
+from collections import defaultdict
 
 import textarena as ta
 from textarena.envs.VendorNegotiation.renderer import (
@@ -88,27 +89,49 @@ class VendorNegotiationEnv(ta.Env):
         self.negotiation_history = []
         self.brand_target = 0.0
         self.vendor_baseline = 0.0
-    
+
     def _load_product_data(self) -> Dict:
-        """Load product data from CSV in long format."""
+        """Load product data from CSV in long format (no pandas)."""
         if os.path.isabs(self.product_list_path):
             csv_path = self.product_list_path
         else:
             csv_path = os.path.join(os.path.dirname(__file__), self.product_list_path)
-        df = pd.read_csv(csv_path)
-        
-        # Group by product
-        products = {}
-        for product_name in df['product'].unique():
-            product_df = df[df['product'] == product_name]
-            products[product_name] = {
-                'price': int(product_df['price_per_unit'].iloc[0]),
-                'cost': int(product_df['cost_per_unit'].iloc[0]),
-                'data': product_df.set_index('discount_rate').to_dict('index')
-            }
-        
-        return products
-    
+
+        products = defaultdict(lambda: {"data": {}})
+
+        with open(csv_path, newline='', encoding="utf-8") as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                product_name = row["product"]
+
+                # Convert discount rate, keeping whole numbers as ints
+                discount_rate_raw = float(row["discount_rate"])
+                discount_rate = int(discount_rate_raw) if discount_rate_raw.is_integer() else discount_rate_raw
+
+                price_per_unit = int(row["price_per_unit"])
+                cost_per_unit = int(row["cost_per_unit"])
+
+                if "price" not in products[product_name]:
+                    products[product_name]["price"] = price_per_unit
+                    products[product_name]["cost"] = cost_per_unit
+
+                # Store all other data fields
+                data_entry = {}
+                for key, val in row.items():
+                    if key == "product":
+                        continue
+                    # Try numeric conversion
+                    try:
+                        num_val = float(val)
+                        val = int(num_val) if num_val.is_integer() else num_val
+                    except ValueError:
+                        pass
+                    data_entry[key] = val
+
+                products[product_name]["data"][discount_rate] = data_entry
+
+        return dict(products)
+
     def _infer_allowed_discounts(self) -> List[int]:
         """Infer allowed discount rates from product data."""
         if not self.all_products:
@@ -208,6 +231,7 @@ class VendorNegotiationEnv(ta.Env):
         """Generate initial prompt for a player."""
         # Create product order string
         product_order = ", ".join(self.selected_products)
+        initial_prompt = f"You are Player {player_id}.\n"
         
         if player_id == 0:  # Brand Specialist
             prompt = f"""ROLE: Brand Specialist at E-commerce Platform
@@ -253,7 +277,7 @@ ACTIONS: There are two parts of an action, STRICTLY in this order.
 ROUNDS: {self.max_rounds} maximum
 """
         
-        return prompt
+        return initial_prompt + prompt
     
     def step(self, action: str) -> Tuple[bool, ta.Info]:
         """Process a player's action."""
