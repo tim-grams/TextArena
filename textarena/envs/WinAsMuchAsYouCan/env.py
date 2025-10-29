@@ -84,15 +84,10 @@ class WinAsMuchAsYouCanEnv(ta.Env):
     
     def _generate_player_prompt(self, player_id: int, game_state: Dict[str, Any]) -> str:
         """Generate the prompt for a player."""
-        current_round = game_state["current_round"]
-        current_phase = game_state["current_phase"]
-        multiplier = game_state["round_multipliers"][current_round]
         
         # Store current state info for synchronization
         game_state["_current_active_player"] = self.state.current_player_id
         game_state["_current_turn"] = self.state.turn
-        
-        is_active = player_id == self.state.current_player_id
         
         prompt = f"""You are Player {player_id} in Win as Much as You Can.
 
@@ -123,34 +118,7 @@ ACT PHASE RULES:
 - Choose your action: [Choose X] or [Choose Y]
 - All players choose simultaneously
 - Round scored when all choices collected
-
-CURRENT STATUS:
-Round {current_round}/10 (Multiplier: {multiplier}x points)
-Phase: {current_phase.upper()}"""
-
-        # Add phase-specific information
-        if current_phase == "talk":
-            talk_round = game_state["talk_round"]
-            max_talk = game_state["max_talk_rounds"]
-            passed_players = game_state["players_passed"]
-            
-            prompt += f"""
-
-TALK PHASE STATUS:
-- Conversation round: {talk_round}/{max_talk}
-- Players who passed: {list(passed_players) if passed_players else 'None'}
-- Your turn to speak: {'YES' if is_active else 'NO'}"""
-        
-        elif current_phase == "act":
-            choices_made = set(game_state["player_choices"].keys())
-            waiting_for = [p for p in range(4) if p not in choices_made]
-            
-            prompt += f"""
-
-ACT PHASE STATUS:
-- Players who chose: {list(choices_made) if choices_made else 'None'}
-- Waiting for: {waiting_for if waiting_for else 'All choices collected'}
-- Your choice needed: {'YES' if player_id in waiting_for else 'NO'}"""
+"""
         
         return prompt
     
@@ -639,3 +607,7 @@ ACT PHASE STATUS:
         observation.append((ta.GAME_ID, board_str, ta.ObservationType.GAME_BOARD))
         
         return player_id, observation
+    
+    def get_board_str(self) -> str:
+        """Get the current board string for a player."""
+        return get_board_str(self.state.game_state, self.state.current_player_id)

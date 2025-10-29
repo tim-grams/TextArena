@@ -482,16 +482,13 @@ register_with_versions(id="Codenames-v0-hardcore",  entry_point="textarena.envs.
 # SettlersOfCatan [4 Players]
 register_with_versions(id="SettlersOfCatan-v0", entry_point="textarena.envs.SettlersOfCatan.env:SettlersOfCatanEnv", wrappers={"default": [SettlersOfCatanObservationWrapper], "-train": [SettlersOfCatanObservationWrapper]}) 
 
-
 # SecretMafia [5-15 Players]
 register_with_versions(id="SecretMafia-v0", entry_point="textarena.envs.SecretMafia.env:SecretMafiaEnv", wrappers={"default": CONVERSATIONAL_WRAPPERS, "-train": CONVERSATIONAL_WRAPPERS}, mafia_ratio=0.25, discussion_rounds=3) 
 
+# WinAsMuchAsYouCanEnv [4 Players]
+register_with_versions(id="WinAsMuchAsYouCan-v0", entry_point="textarena.envs.WinAsMuchAsYouCan.env:WinAsMuchAsYouCanEnv", wrappers={"default": DEFAULT_WRAPPERS, "-train": BOARDGAME_WRAPPERS})
 
-
-
-
-
-# # RandomizedTicTacToe [2 Player]
+# RandomizedTicTacToe [2 Player]
 # register(id="RandomizedTicTacToe-v0", entry_point="textarena.envs.RandomizedTicTacToe.env:RandomizedTicTacToeEnv", default_wrappers=DEFAULT_WRAPPERS)
 # register(id="RandomizedTicTacToe-v0-raw", entry_point="textarena.envs.RandomizedTicTacToe.env:RandomizedTicTacToeEnv")
 

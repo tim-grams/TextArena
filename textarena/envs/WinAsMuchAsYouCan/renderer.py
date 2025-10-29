@@ -5,30 +5,6 @@ def get_board_str(game_state: Dict[str, Any], current_player_id: int) -> str:
     """Create a string representation of the current game state."""
     lines = []
     
-    # Game rules and actions reference at the top
-    lines.append("=" * 70)
-    lines.append("WIN AS MUCH AS YOU CAN - GAME RULES")
-    lines.append("=" * 70)
-    lines.append("OBJECTIVE: Earn the most points over 10 rounds by choosing X or Y strategically")
-    lines.append("")
-    lines.append("SCORING RUBRIC (per round):")
-    lines.append("- 1 X and 3 Y's: X wins 3 points, Y's lose 1 point each")
-    lines.append("- 2 X's and 2 Y's: X's win 2 points each, Y's lose 2 points each")
-    lines.append("- 3 X's and 1 Y: X's win 1 point each, Y loses 3 points")
-    lines.append("- 4 X's: All X's lose 1 point each")
-    lines.append("- 4 Y's: All Y's win 1 point each")
-    lines.append("")
-    lines.append("ROUND STRUCTURE:")
-    lines.append("- Rounds 1-4, 6-7, 9: Act phase only (1x points)")
-    lines.append("- Round 5: Talk -> Act phase (3x points)")
-    lines.append("- Round 8: Talk -> Act phase (5x points)")
-    lines.append("- Round 10: Talk -> Act phase (10x points)")
-    lines.append("")
-    lines.append("ACTIONS:")
-    lines.append("Talk Phase: [Broadcast] message, [Whisper to X] message, [Pass]")
-    lines.append("Act Phase: [Choose X], [Choose Y]")
-    lines.append("")
-    
     # Current game state
     lines.append("=" * 70)
     lines.append("CURRENT GAME STATE")
@@ -63,10 +39,10 @@ def get_board_str(game_state: Dict[str, Any], current_player_id: int) -> str:
             lines.append("RECENT MESSAGES:")
             for msg in recent_messages:
                 if msg["type"] == "broadcast":
-                    lines.append(f"  Player {msg['from']} (Public): {msg['message']}")
+                    lines.append(f"  Player {msg['from']} (Public): {msg['message'][:100]}")
                 elif msg["type"] == "whisper":
                     if msg["to"] == current_player_id or msg["from"] == current_player_id:
-                        lines.append(f"  Private message from Player {msg['from']} to Player {msg['to']}: {msg['message']}")
+                        lines.append(f"  Private message from Player {msg['from']} to Player {msg['to']}: {msg['message'][:100]}")
         else:
             lines.append("RECENT MESSAGES: None")
         
@@ -147,20 +123,20 @@ def get_board_str(game_state: Dict[str, Any], current_player_id: int) -> str:
     progress_bar = ""
     for round_num in range(1, 11):
         if round_num < current_round:
-            progress_bar += "X"  # Completed round
+            progress_bar += " X "  # Completed round
         elif round_num == current_round:
-            progress_bar += ">"  # Current round
+            progress_bar += " > "  # Current round
         else:
-            progress_bar += "."  # Future round
+            progress_bar += " . "  # Future round
         
         # Add spacing and markers for communication rounds
         if round_num in {5, 8, 10}:
-            progress_bar += "T"  # Talk round marker
+            progress_bar += " T "  # Talk round marker
         else:
             progress_bar += " "
         
         if round_num < 10:
-            progress_bar += " "
+            progress_bar += ""
     
     lines.append(f"Rounds: {progress_bar}")
     lines.append("Legend: X=Completed >=Current .=Future T=Talk Round")
