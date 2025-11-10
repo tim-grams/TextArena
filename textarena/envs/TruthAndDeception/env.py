@@ -10,8 +10,8 @@ class TruthAndDeceptionEnv(ta.Env):
         assert max_turns%2==0, f"Please use an even number of max turns. Current max_turns: {max_turns}"
         self.max_turns = max_turns
         self._load_facts(data_path=data_path)
-        self.guess_fact1_pattern = re.compile(r"\[Fact 1\]", re.IGNORECASE)
-        self.guess_fact2_pattern = re.compile(r"\[Fact 2\]", re.IGNORECASE)
+        self.guess_fact1_pattern = re.compile(r"\[Final Guess: Fact 1\]", re.IGNORECASE)
+        self.guess_fact2_pattern = re.compile(r"\[Final Guess: Fact 2\]", re.IGNORECASE)
 
     def get_board_str(self):
         return create_board_str(game_state=self.state.game_state)
@@ -44,40 +44,48 @@ class TruthAndDeceptionEnv(ta.Env):
         self.state.reset(game_state=game_state, player_prompt_function=self._prompt, role_mapping={0: "Deceiver", 1: "Guesser"})
 
     def _prompt(self, player_id: int, game_state: Dict[int, Any]) -> str:
-        prompt = f"You are Player {player_id}, and you are the {self.state.role_mapping[player_id]} in the 'Truth and Deception' game.\n"
-        if self.state.role_mapping[player_id] == "Deceiver":
+        role = self.state.role_mapping[player_id]
+        prompt = f"You are Player {player_id}, and you are the {role} in the 'Truth and Deception' game.\n"
+        prompt += (
+            "When discussing with the other player, think through your strategy privately before you speak. When you are ready to send the public message, format it as [Message: <your words>].\n"
+            "Only the content inside [Message: ...] is delivered to the other player; anything outside the brackets is kept hidden.\n"
+            "When you make the final guess, send it as [Final Guess: Fact 1] or [Final Guess: Fact 2].\n"
+        )
+        if role == "Deceiver":
             prompt += (
                 f"You know which of the following two facts is correct:\n"
                 f"Fact 1: {game_state['fact1']['fact']} ({'correct' if game_state['fact1']['is_correct'] else 'wrong'})\n"
                 f"Fact 2: {game_state['fact2']['fact']} ({'correct' if game_state['fact2']['is_correct'] else 'wrong'})\n"
                 "Your goal is to convince the other player to choose the incorrect fact.\n"
                 f"You will have a conversation for {self.state.max_turns} turns.\n"
-                "After that, the other player will make their guess.\n"
-                "On your turn, simply type your message."
+                "After that, the other player will make their guess."
             )
-        elif self.state.role_mapping[player_id] == "Guesser":
+        elif role == "Guesser":
             prompt += (
                 f"You need to determine which of the following two facts is correct:\n"
                 f"Fact 1: {game_state['fact1']['fact']}\n"
                 f"Fact 2: {game_state['fact2']['fact']}\n"
                 f"You will have a conversation with the other player for {self.state.max_turns} turns.\n"
-                "After that, you will make your guess.\n"
-                "On your turn, simply type your message."
+                "After that, you will make your guess."
             )
-        else: raise ValueError(f"Unexpected role mapping: {self.state.role_mapping[player_id]}. Expected 'Deceiver' or 'Guesser'.")
+        else: raise ValueError(f"Unexpected role mapping: {role}. Expected 'Deceiver' or 'Guesser'.")
         return prompt 
 
     def step(self, action: str) -> Tuple[bool, ta.Info]:
-        self.state.add_observation(from_id=self.state.current_player_id, message=action, observation_type=ta.ObservationType.PLAYER_ACTION)
+        if not self.state.turn == self.state.max_turns-1: broadcast_message = self._extract_broadcast_message(action=action) 
+        else: broadcast_message = action
+        self.state.add_observation(from_id=self.state.current_player_id, message=broadcast_message, observation_type=ta.ObservationType.PLAYER_ACTION)
         if self.state.turn == self.state.max_turns-2:  # check if the guessing phase has started
-            self.state.add_observation(message="Now guess which of the two facts are correct by returning '[Fact 1]' or '[Fact 2]'.", observation_type=ta.ObservationType.GAME_MESSAGE) 
+            self.state.add_observation(message="Now guess which of the two facts is correct. Share any final reasoning privately, then send '[Final Guess: Fact 1]' or '[Final Guess: Fact 2]'.", observation_type=ta.ObservationType.GAME_MESSAGE) 
         elif self.state.turn == self.state.max_turns-1:
-            if self.guess_fact1_pattern.search(action) or self.guess_fact2_pattern.search(action): # evaluate guess
-                if (self.guess_fact1_pattern.search(action) and self.state.game_state["fact1"]["is_correct"]) or (self.guess_fact2_pattern.search(action) and self.state.game_state["fact2"]["is_correct"]):
+            if self.guess_fact1_pattern.search(broadcast_message) or self.guess_fact2_pattern.search(broadcast_message): # evaluate guess
+                if (self.guess_fact1_pattern.search(broadcast_message) and self.state.game_state["fact1"]["is_correct"]) or (self.guess_fact2_pattern.search(broadcast_message) and self.state.game_state["fact2"]["is_correct"]):
                     winner_id=self.state.current_player_id; reason=f"Player {self.state.current_player_id} guessed correct fact." # correct guess
                 else: winner_id=1-self.state.current_player_id; reason=f"Player {self.state.current_player_id} guessed the wrong fact." # wrong guess
                 self.state.set_winner(player_id=winner_id, reason=reason) # set state winner
             else: self.state.set_invalid_move(reason=f"Player {self.state.current_player_id} did not make their guess in the correct format.")
         return self.state.step()
 
-            
+    def _extract_broadcast_message(self, action: str) -> str:
+        match = re.search(r"\[Message:\s*(.*?)\]", action, re.DOTALL | re.IGNORECASE)
+        return match.group(1).strip() if match else action.strip()

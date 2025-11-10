@@ -20,6 +20,7 @@ class IteratedPrisonersDilemmaEnv(ta.Env):
         # action regex
         self.cooperate_pattern = re.compile(r"\[Cooperate\]", re.IGNORECASE)
         self.defect_pattern    = re.compile(r"\[Defect\]",    re.IGNORECASE)
+        self.conversation_message_pattern = re.compile(r"\[Message:\s*(.*?)\]", re.DOTALL | re.IGNORECASE)
 
     def reset(self, num_players: int, seed: Optional[int] = None):
         self.state = ta.TwoPlayerState(num_players=num_players, seed=seed)
@@ -28,6 +29,10 @@ class IteratedPrisonersDilemmaEnv(ta.Env):
             "total_conversation_rounds": self.conversation_rounds, "decisions": {0: None, 1: None}, "scores": {0: 0, 1: 0},
         }
         self.state.reset(game_state=game_state, player_prompt_function=self._prompt)
+        self.state.add_observation(message=f"--- Starting Round {self.state.game_state['round']} ---", observation_type=ta.ObservationType.GAME_MESSAGE)
+        self.state.add_observation(message=f"Conversation started. Reply with a message to the other player until the conversation phase is finished. Reply in '[Message: ...]'.", observation_type=ta.ObservationType.GAME_BOARD)
+
+        
 
     def _prompt(self, player_id: int, game_state: Dict[str, Any]) -> str:
         return (
@@ -43,7 +48,7 @@ class IteratedPrisonersDilemmaEnv(ta.Env):
             f"- One Defects, one Cooperates ➜ Defector {self.defect_reward}, "
             f"Cooperator {self.sucker_reward}\n\n"
             f"How to Play:\n"
-            f"- During conversation: type any text you wish.\n"
+            f"- During conversation: think through your plan privately, then send your public response as [<your words>]. Only the content inside [ and ] is delivered to the other player.\n"
             f"- During decision phase: include '[Cooperate]' or '[Defect]' (case-insensitive). "
             f"You may add extra text before/after the token.\n"
             "The payoff matrix will remain the same every round:\n"
@@ -54,14 +59,21 @@ class IteratedPrisonersDilemmaEnv(ta.Env):
         )
 
     def step(self, action: str) -> Tuple[bool, ta.Info]:
-        self.state.add_observation(to_id=self.state.current_player_id, from_id=self.state.current_player_id, message=action, observation_type=ta.ObservationType.PLAYER_ACTION)
         match self.state.game_state["phase"]:
             case "conversation":    self._handle_conversation_phase(action)
             case "decision":        self._handle_decision_phase(action)
         return self.state.step()
 
     def _handle_conversation_phase(self, action: str):
-        self.state.add_observation(to_id=1-self.state.current_player_id, from_id=self.state.current_player_id, message=action.strip(), observation_type=ta.ObservationType.PLAYER_ACTION)
+        broadcast_message = self._extract_broadcast_message(action)
+        if broadcast_message is None: self.state.set_invalid_move(reason="You did not reply in the format '[Message: ...]'"); return
+        self.state.add_observation(to_id=self.state.current_player_id, from_id=self.state.current_player_id, message=broadcast_message, observation_type=ta.ObservationType.PLAYER_ACTION)
+        self.state.add_observation(
+            to_id=1-self.state.current_player_id,
+            from_id=self.state.current_player_id,
+            message=broadcast_message,
+            observation_type=ta.ObservationType.PLAYER_ACTION,
+        )
 
         # advance the conversation counter after the *second* player's turn
         if self.state.current_player_id == 1:
@@ -89,6 +101,7 @@ class IteratedPrisonersDilemmaEnv(ta.Env):
                 # reset for next round
                 self.state.game_state.update({"phase": "conversation", "conversation_round": 0, "decisions": {0: None, 1: None}})
                 self.state.add_observation(message=f"--- Starting Round {self.state.game_state['round']} ---", observation_type=ta.ObservationType.GAME_MESSAGE)
+                self.state.add_observation(message=f"Conversation started. Reply with a message to the other player until the conversation phase is finished. Reply in '[Message: ...]'.", observation_type=ta.ObservationType.GAME_BOARD)
 
     def _resolve_round(self):
         d0 = self.state.game_state["decisions"][0]
@@ -119,3 +132,7 @@ class IteratedPrisonersDilemmaEnv(ta.Env):
         else:
             winner = 0 if s0 > s1 else 1
             self.state.set_winner(player_id=winner, reason=f"Player {winner} wins {max(s0, s1)} - {min(s0, s1)}.")
+
+    def _extract_broadcast_message(self, action: str) -> str:
+        match = self.conversation_message_pattern.search(action)
+        return match.group(1).strip() if match else None

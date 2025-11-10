@@ -4,15 +4,7 @@ from typing import Optional, List, Dict
 import textarena as ta
 
 default_models = [
-    "amazon/nova-pro-v1",
-    "openai/gpt-4o-mini",
-    "anthropic/claude-3-haiku",
-    "meta-llama/llama-3.3-70b-instruct",
-    "meta-llama/llama-3.1-405b-instruct",
-    "qwen/qwen-turbo",
-    "minimax/minimax-01",
-    "microsoft/phi-4",
-    "deepseek/deepseek-chat"
+    "meta-llama/llama-3.3-70b-instruct"
 ]
 
 JUROR_SYSTEM_PROMPT = (
@@ -31,7 +23,7 @@ class OpenRouterJury:
         options (List[str]): The possible options jurors may select.
     """
 
-    def __init__(self, options: List[str], jury_size: int=5, model_names: Optional[List[str]]=default_models):
+    def __init__(self, options: List[str], jury_size: int=3, model_names: Optional[List[str]]=default_models):
         """
         Initialize an OpenRouterJury instance.
 

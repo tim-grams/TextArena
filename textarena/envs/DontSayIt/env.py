@@ -32,12 +32,10 @@ class DontSayItEnv(ta.Env):
     def step(self, action: str) -> Tuple[bool, ta.Info]:
         filtered_action = self._extract_broadcast_message(action)
         self.state.add_observation(from_id=self.state.current_player_id, message=filtered_action, observation_type=ta.ObservationType.PLAYER_ACTION)
-        if self.state.game_state["target_words"][1-self.state.current_player_id].lower() in filtered_action.lower(): self.state.set_winner(player_id=1-self.state.current_player_id, reason=f"Player {self.state.current_player_id} mentioned the opponent's secret word.")            
+        if re.search(rf"\b{re.escape(self.state.game_state['target_words'][1 - self.state.current_player_id].lower())}\b", filtered_action.lower()): self.state.set_winner(player_id=1-self.state.current_player_id, reason=f"Player {self.state.current_player_id} mentioned the opponent's secret word.")
         elif self.state.check_turn_limit(): self.state.set_draw(reason="The turn limit has been reached")
         return self.state.step()
 
     def _extract_broadcast_message(self, action: str) -> str:
-        """Strip model reasoning and keep only the first bracketed segment, formatted as [Message: ...]."""
         match = re.search(r"\[Message:\s*(.*?)\]", action, re.DOTALL | re.IGNORECASE)
-        content = match.group(1).strip() if match else action.strip()
-        return content
+        return match.group(1).strip() if match else action.strip()
