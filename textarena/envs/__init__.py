@@ -2,12 +2,16 @@
 
 from textarena.envs.registration import register, register_with_versions
 from textarena.envs.utils.jury import OpenRouterJury
-from textarena.wrappers import LLMObservationWrapper, ActionFormattingWrapper, GameMessagesAndCurrentBoardObservationWrapper, GameMessagesObservationWrapper, GameBoardObservationWrapper, ClipCharactersActionWrapper, SettlersOfCatanObservationWrapper
+from textarena.wrappers import LLMObservationWrapper, SingleTurnObservationWrapper, ActionFormattingWrapper, GameMessagesAndCurrentBoardObservationWrapper, GameMessagesObservationWrapper, GameBoardObservationWrapper, ClipCharactersActionWrapper, SettlersOfCatanObservationWrapper
 
 # standard wrapper combinations
 DEFAULT_WRAPPERS = [LLMObservationWrapper, ActionFormattingWrapper]
 BOARDGAME_WRAPPERS = [GameMessagesAndCurrentBoardObservationWrapper, ActionFormattingWrapper]
 CONVERSATIONAL_WRAPPERS = [LLMObservationWrapper, ClipCharactersActionWrapper]
+
+
+# SingleTurnEnv (1 Player)
+register_with_versions(id="aime-2025-v0", entry_point="textarena.envs.SingleTurnEnv.env:SingleTurnDatasetEnv", wrappers={'default': [SingleTurnObservationWrapper]}, dataset="/home/tg69/TextArena/textarena/envs/SingleTurnEnv/data/aime2025.jsonl", verifier='math-verify')
 
 
 # 2048 [1 Player]
