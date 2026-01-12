@@ -11,8 +11,12 @@ CONVERSATIONAL_WRAPPERS = [LLMObservationWrapper, ClipCharactersActionWrapper]
 
 
 # SingleTurnEnv (1 Player)
+register_with_versions(id="mmlu_pro-v0", entry_point="textarena.envs.SingleTurnEnv.env:SingleTurnDatasetEnv", wrappers={'default': [SingleTurnObservationWrapper]}, dataset="/home/tg69/TextArena/textarena/envs/SingleTurnEnv/data/mmlu_pro.jsonl", verifier='multiple-choice')
+register_with_versions(id="gpqa-v0", entry_point="textarena.envs.SingleTurnEnv.env:SingleTurnDatasetEnv", wrappers={'default': [SingleTurnObservationWrapper]}, dataset="/home/tg69/TextArena/textarena/envs/SingleTurnEnv/data/gpqa.jsonl", verifier='multiple-choice')
+register_with_versions(id="math500-v0", entry_point="textarena.envs.SingleTurnEnv.env:SingleTurnDatasetEnv", wrappers={'default': [SingleTurnObservationWrapper]}, dataset="/home/tg69/TextArena/textarena/envs/SingleTurnEnv/data/math500.jsonl", verifier='math-verify')
+register_with_versions(id="aime-2024-v0", entry_point="textarena.envs.SingleTurnEnv.env:SingleTurnDatasetEnv", wrappers={'default': [SingleTurnObservationWrapper]}, dataset="/home/tg69/TextArena/textarena/envs/SingleTurnEnv/data/aime2024.jsonl", verifier='math-verify')
 register_with_versions(id="aime-2025-v0", entry_point="textarena.envs.SingleTurnEnv.env:SingleTurnDatasetEnv", wrappers={'default': [SingleTurnObservationWrapper]}, dataset="/home/tg69/TextArena/textarena/envs/SingleTurnEnv/data/aime2025.jsonl", verifier='math-verify')
-
+register_with_versions(id="livecodebench-v5", entry_point="textarena.envs.LiveCodeBench.env:LiveCodeBenchEnv", wrappers={'default': [SingleTurnObservationWrapper]}, version_tag='release_v5', timeout=6)
 
 # 2048 [1 Player]
 # Standard 4x4 board variants
