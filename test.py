@@ -9,15 +9,20 @@ agents = {
 
 # initialize the environment
 env = ta.make(env_id="SimpleTak-v0-train")
-# env = ta.wrappers.SimpleRenderWrapper(env=env) #, render_mode="standard")
 env.reset(num_players=len(agents))
 
-# main game loop
-done = False 
-while not done:
-  player_id, observation = env.get_observation()
-  action = agents[player_id](observation)
-  done, step_info = env.step(action=action)
-rewards, game_info = env.close()
-print(rewards)
-print(game_info)
+def single_game(env, agents):
+    done = False
+    while not done:
+        player_id, observation = env.get_observation()
+        action = agents[player_id](observation)
+        done, step_info = env.step(action=action)
+    rewards, game_info = env.close()
+    return rewards, game_info
+
+n_samples = 250
+for i in range(n_samples):
+    rewards, game_info = single_game(env, agents)
+    print(f"Game {i+1} rewards: {rewards}")
+    print(f"Game {i+1} game info: {game_info}")
+

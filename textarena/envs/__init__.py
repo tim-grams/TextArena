@@ -17,6 +17,7 @@ register_with_versions(id="math500-v0", entry_point="textarena.envs.SingleTurnEn
 register_with_versions(id="aime-2024-v0", entry_point="textarena.envs.SingleTurnEnv.env:SingleTurnDatasetEnv", wrappers={'default': [SingleTurnObservationWrapper]}, dataset="/home/tg69/TextArena/textarena/envs/SingleTurnEnv/data/aime2024.jsonl", verifier='math-verify')
 register_with_versions(id="aime-2025-v0", entry_point="textarena.envs.SingleTurnEnv.env:SingleTurnDatasetEnv", wrappers={'default': [SingleTurnObservationWrapper]}, dataset="/home/tg69/TextArena/textarena/envs/SingleTurnEnv/data/aime2025.jsonl", verifier='math-verify')
 register_with_versions(id="livecodebench-v5", entry_point="textarena.envs.LiveCodeBench.env:LiveCodeBenchEnv", wrappers={'default': [SingleTurnObservationWrapper]}, version_tag='release_v5', timeout=6)
+register_with_versions(id="bbh-v0", entry_point="textarena.envs.SingleTurnEnv.env:BigBenchHardEnv", wrappers={'default': [SingleTurnObservationWrapper]}, subset=None, verifier="string-match")
 
 # 2048 [1 Player]
 # Standard 4x4 board variants
